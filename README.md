@@ -1,4 +1,5 @@
 "RuralCare AI" – Smart Risk & Resource Optimizer for Rural Health Systems
+
 🧠 The Problem: A Crisis of Invisibility in Rural Healthcare
 In the remote and underserved corners of India — Tier 2/3 cities and rural areas — frontline health workers are navigating life-and-death decisions without real-time data, predictive insights, or decision-support tools. This lack of technology support leads to avoidable tragedies and systemic inefficiencies.
 
