@@ -60,3 +60,6 @@ Let’s turn data into decisions, and decisions into outcomes — for the 65% of
 - React Hook Form – To manage form input  
 - Custom Risk Logic (JS/AI based) – For dynamic health risk prediction  
 - Mapbox / Leaflet (Planned) – For geographical visualization
+
+
+deployed link of the website : https://github-olive-two.vercel.app/dashboard
