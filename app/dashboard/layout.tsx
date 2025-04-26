@@ -1,3 +1,4 @@
+// "use client" directive to enable client-side rendering in Next.js 13+ components
 "use client"
 
 import type React from "react"
@@ -18,6 +19,7 @@ export default function DashboardLayout({
   const { userData } = useFirebase()
   const { t } = useTranslation()
 
+   // Check user authentication status and redirect to login if unauthenticated
   useEffect(() => {
     // Redirect to login if not authenticated
     if (!userData.isLoading && !userData.user) {
