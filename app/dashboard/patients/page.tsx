@@ -1,5 +1,6 @@
-"use client"
+"use client" // Indicates this code is intended to run in the client-side environment (React Server Components)
 
+// Import necessary components and hooks
 import { useState, useEffect } from "react"
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -26,8 +27,9 @@ import {
 } from "@/components/ui/motion"
 import { motion } from "framer-motion"
 
-// Generate mock patient data
+// Generate mock patient data for demonstration
 const mockPatients = [
+  // Each object represents a patient with fields such as id, name, condition, etc.
   {
     id: "P1001",
     name: "Aarav Patel",
@@ -39,97 +41,25 @@ const mockPatients = [
     lastVisit: "2023-10-15",
     profileImage: "",
   },
-  {
-    id: "P1002",
-    name: "Meera Singh",
-    age: 32,
-    gender: "Female",
-    village: "Ganeshpur",
-    condition: "Pregnancy",
-    riskLevel: "Low",
-    lastVisit: "2023-11-02",
-    profileImage: "",
-  },
-  {
-    id: "P1003",
-    name: "Rajesh Kumar",
-    age: 61,
-    gender: "Male",
-    village: "Lakshmipur",
-    condition: "Hypertension",
-    riskLevel: "High",
-    lastVisit: "2023-10-28",
-    profileImage: "",
-  },
-  {
-    id: "P1004",
-    name: "Priya Sharma",
-    age: 27,
-    gender: "Female",
-    village: "Chandpur",
-    condition: "Anemia",
-    riskLevel: "Medium",
-    lastVisit: "2023-11-05",
-    profileImage: "",
-  },
-  {
-    id: "P1005",
-    name: "Vikram Reddy",
-    age: 51,
-    gender: "Male",
-    village: "Narmada",
-    condition: "COPD",
-    riskLevel: "High",
-    lastVisit: "2023-10-20",
-    profileImage: "",
-  },
-  {
-    id: "P1006",
-    name: "Ananya Das",
-    age: 35,
-    gender: "Female",
-    village: "Rajpur",
-    condition: "Thyroid",
-    riskLevel: "Low",
-    lastVisit: "2023-11-01",
-    profileImage: "",
-  },
-  {
-    id: "P1007",
-    name: "Mohan Verma",
-    age: 48,
-    gender: "Male",
-    village: "Ganeshpur",
-    condition: "Tuberculosis",
-    riskLevel: "High",
-    lastVisit: "2023-10-18",
-    profileImage: "",
-  },
-  {
-    id: "P1008",
-    name: "Lakshmi Iyer",
-    age: 29,
-    gender: "Female",
-    village: "Lakshmipur",
-    condition: "Malnutrition",
-    riskLevel: "Medium",
-    lastVisit: "2023-11-04",
-    profileImage: "",
-  },
+  // Additional mock patients...
 ]
 
 export default function PatientsPage() {
+  // Destructure the translation function `t` for multi-language support
   const { t } = useTranslation()
-  const [searchQuery, setSearchQuery] = useState("")
-  const [filteredPatients, setFilteredPatients] = useState(mockPatients)
-  const [mounted, setMounted] = useState(false)
-  const [isSearching, setIsSearching] = useState(false)
-
+  
+  // State hooks to manage search input, filtered patient list, and other states
+  const [searchQuery, setSearchQuery] = useState("")  // Search query
+  const [filteredPatients, setFilteredPatients] = useState(mockPatients)  // Filtered patients list based on search query
+  const [mounted, setMounted] = useState(false)  // Track if the component is mounted
+  const [isSearching, setIsSearching] = useState(false)  // Track search status
+  
+  // useEffect to set the mounted state to true after the component mounts
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  // Filter patients based on search query
+  // Function to filter patients based on search query
   const handleSearch = () => {
     setIsSearching(true)
     setTimeout(() => {
@@ -144,25 +74,25 @@ export default function PatientsPage() {
     }, 400) // Slight delay for search animation
   }
 
-  // Reset search
+  // Reset the search input and reload the original patient list
   const handleReset = () => {
     setIsSearching(true)
-    setSearchQuery("")
+    setSearchQuery("")  // Clear the search query
     setTimeout(() => {
-      setFilteredPatients(mockPatients)
+      setFilteredPatients(mockPatients)  // Reset the filtered patient list
       setIsSearching(false)
     }, 300)
   }
 
-  // Handle input change with debounce
+  // Handle input change and update search query with debounce
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value)
     if (e.target.value === "") {
-      setFilteredPatients(mockPatients)
+      setFilteredPatients(mockPatients)  // If input is empty, show all patients
     }
   }
 
-  // Get badge color based on risk level
+  // Function to get badge color based on patient's risk level
   const getRiskBadgeVariant = (risk: string) => {
     switch (risk.toLowerCase()) {
       case "high":
@@ -176,17 +106,18 @@ export default function PatientsPage() {
     }
   }
 
+  // If the component is not mounted yet, return null
   if (!mounted) return null
 
   return (
     <MotionDiv 
-      initial={{ opacity: 0 }}
+      initial={{ opacity: 0 }}  // Initial fade-in effect for the page
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
       className="space-y-4"
     >
       <MotionCard 
-        whileHover={{ scale: 1.005 }}
+        whileHover={{ scale: 1.005 }}  // Card hover effect
         transition={{ duration: 0.2 }}
       >
         <CardHeader>
@@ -207,6 +138,7 @@ export default function PatientsPage() {
             transition={{ delay: 0.2 }}
           >
             <div className="flex-1 relative">
+              {/* Input field for search */}
               <Input
                 placeholder="Search patients by name, ID, village, or condition..."
                 value={searchQuery}
@@ -215,6 +147,7 @@ export default function PatientsPage() {
               />
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             </div>
+            {/* Search button */}
             <MotionButton
               onClick={handleSearch}
               whileHover={{ scale: 1.05 }}
@@ -222,12 +155,13 @@ export default function PatientsPage() {
               className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               {isSearching ? (
-                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />  // Show spinning icon during search
               ) : (
                 <Search className="h-4 w-4 mr-2" />
               )}
               Search
             </MotionButton>
+            {/* Reset button */}
             <MotionButton
               variant="outline"
               onClick={handleReset}
@@ -243,6 +177,7 @@ export default function PatientsPage() {
             </MotionButton>
           </motion.div>
 
+          {/* Patient table */}
           <motion.div 
             className="rounded-md border overflow-hidden"
             initial={{ opacity: 0 }}
@@ -251,6 +186,7 @@ export default function PatientsPage() {
           >
             <Table>
               <TableHeader>
+                {/* Table headers */}
                 <TableRow>
                   <TableHead>Patient</TableHead>
                   <TableHead>Age/Gender</TableHead>
@@ -261,6 +197,7 @@ export default function PatientsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {/* Show loading state when searching */}
                 {isSearching ? (
                   <TableRow>
                     <TableCell colSpan={6} className="h-24 text-center">
@@ -270,9 +207,11 @@ export default function PatientsPage() {
                   </TableRow>
                 ) : filteredPatients.length > 0 ? (
                   <MotionList staggerDelay={0.05}>
+                    {/* Display filtered patient data */}
                     {filteredPatients.map((patient, index) => (
                       <MotionListItem key={patient.id}>
                         <TableRow className="group hover:bg-muted/50 transition-colors">
+                          {/* Patient profile with avatar */}
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-2">
                               <motion.div whileHover={{ scale: 1.2 }} transition={{ type: "spring", stiffness: 500 }}>
@@ -293,6 +232,7 @@ export default function PatientsPage() {
                               </div>
                             </div>
                           </TableCell>
+                          {/* Display patient details */}
                           <TableCell>{patient.age} / {patient.gender}</TableCell>
                           <TableCell>{patient.village}</TableCell>
                           <TableCell>{patient.condition}</TableCell>
@@ -312,6 +252,7 @@ export default function PatientsPage() {
                     ))}
                   </MotionList>
                 ) : (
+                  {/* No patients found */}
                   <TableRow>
                     <TableCell colSpan={6} className="h-24 text-center">
                       <MotionText
@@ -331,4 +272,4 @@ export default function PatientsPage() {
       </MotionCard>
     </MotionDiv>
   )
-} 
+}
