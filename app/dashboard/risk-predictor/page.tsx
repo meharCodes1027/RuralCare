@@ -1,5 +1,6 @@
-"use client"
+"use client" // Tells Next.js this is a client-side component
 
+// Import necessary libraries and UI components
 import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -17,13 +18,12 @@ import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useTranslation } from "@/components/i18n/language-provider"
 
+// Define form schema and validation using Zod
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  age: z
-    .string()
-    .refine((val) => !isNaN(Number.parseInt(val)) && Number.parseInt(val) > 0 && Number.parseInt(val) < 120, {
-      message: "Age must be a valid number between 1 and 120.",
-    }),
+  age: z.string().refine((val) => !isNaN(Number.parseInt(val)) && Number.parseInt(val) > 0 && Number.parseInt(val) < 120, {
+    message: "Age must be a valid number between 1 and 120.",
+  }),
   gender: z.string().min(1, { message: "Please select a gender." }),
   bloodPressureSystolic: z.string().refine((val) => !isNaN(Number.parseInt(val)) && Number.parseInt(val) > 0, {
     message: "Please enter a valid systolic blood pressure.",
@@ -34,15 +34,14 @@ const formSchema = z.object({
   heartRate: z.string().refine((val) => !isNaN(Number.parseInt(val)) && Number.parseInt(val) > 0, {
     message: "Please enter a valid heart rate.",
   }),
-  temperature: z
-    .string()
-    .refine((val) => !isNaN(Number.parseFloat(val)) && Number.parseFloat(val) > 30 && Number.parseFloat(val) < 45, {
-      message: "Please enter a valid temperature between 30°C and 45°C.",
-    }),
+  temperature: z.string().refine((val) => !isNaN(Number.parseFloat(val)) && Number.parseFloat(val) > 30 && Number.parseFloat(val) < 45, {
+    message: "Please enter a valid temperature between 30°C and 45°C.",
+  }),
   symptoms: z.array(z.string()).optional(),
   comorbidities: z.array(z.string()).optional(),
 })
 
+// List of symptom options
 const symptoms = [
   { id: "fever", label: "Fever" },
   { id: "cough", label: "Cough" },
@@ -54,6 +53,7 @@ const symptoms = [
   { id: "nausea", label: "Nausea" },
 ]
 
+// List of comorbidity options
 const comorbidities = [
   { id: "diabetes", label: "Diabetes" },
   { id: "hypertension", label: "Hypertension" },
@@ -65,15 +65,17 @@ const comorbidities = [
   { id: "immunocompromised", label: "Immunocompromised" },
 ]
 
+// Main component: RiskPredictorPage
 export default function RiskPredictorPage() {
-  const { t } = useTranslation()
+  const { t } = useTranslation() // For internationalization (i18n) translations
   const [result, setResult] = useState<null | {
     riskLevel: "Low" | "Moderate" | "High"
     score: number
     recommendation: string
     details: string[]
-  }>(null)
+  }>(null) // State to store risk assessment result
 
+  // Setup React Hook Form with Zod validation
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -89,8 +91,9 @@ export default function RiskPredictorPage() {
     },
   })
 
+  // Handle form submission
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // Simple risk calculation algorithm for demo purposes
+    // Extract numeric values from form fields
     const age = Number.parseInt(values.age)
     const systolic = Number.parseInt(values.bloodPressureSystolic)
     const diastolic = Number.parseInt(values.bloodPressureDiastolic)
@@ -99,11 +102,13 @@ export default function RiskPredictorPage() {
 
     let riskScore = 0
 
-    // Age risk
+    // Risk scoring based on different criteria
+
+    // Age-based risk
     if (age > 65) riskScore += 2
     else if (age > 50) riskScore += 1
 
-    // Blood pressure risk
+    // Blood pressure-based risk
     if (systolic > 160 || diastolic > 100) riskScore += 3
     else if (systolic > 140 || diastolic > 90) riskScore += 2
 
@@ -114,22 +119,22 @@ export default function RiskPredictorPage() {
     if (temperature > 38.5) riskScore += 2
     else if (temperature > 37.5) riskScore += 1
 
-    // Symptoms risk
+    // Symptoms-based risk
     if (values.symptoms) {
       if (values.symptoms.includes("chest-pain")) riskScore += 3
       if (values.symptoms.includes("shortness-of-breath")) riskScore += 2
-      riskScore += values.symptoms.length * 0.5
+      riskScore += values.symptoms.length * 0.5 // Small weight for number of symptoms
     }
 
-    // Comorbidities risk
+    // Comorbidities-based risk
     if (values.comorbidities) {
       if (values.comorbidities.includes("heart-disease")) riskScore += 3
       if (values.comorbidities.includes("diabetes")) riskScore += 2
       if (values.comorbidities.includes("hypertension")) riskScore += 2
-      riskScore += values.comorbidities.length * 0.5
+      riskScore += values.comorbidities.length * 0.5 // Small weight for number of comorbidities
     }
 
-    // Determine risk level
+    // Determine final risk level based on riskScore
     let riskLevel: "Low" | "Moderate" | "High" = "Low"
     let recommendation = ""
     let details: string[] = []
@@ -163,14 +168,16 @@ export default function RiskPredictorPage() {
       ]
     }
 
+    // Update the result state with risk information
     setResult({
       riskLevel,
-      score: Math.min(Math.round(riskScore * 10) / 10, 10),
+      score: Math.min(Math.round(riskScore * 10) / 10, 10), // Cap the score at 10
       recommendation,
       details,
     })
   }
 
+  // Helper function to determine badge color based on risk level
   const getRiskBadgeVariant = (risk: string) => {
     switch (risk.toLowerCase()) {
       case "high":
@@ -184,13 +191,16 @@ export default function RiskPredictorPage() {
     }
   }
 
+  // Render the page
   return (
     <div className="space-y-6">
+      {/* Page Header */}
       <div className="flex flex-col gap-2">
         <h2 className="text-2xl font-bold tracking-tight">{t("risk.title")}</h2>
         <p className="text-muted-foreground">{t("risk.description")}</p>
       </div>
 
+      {/* Tabs for switching between input form and results */}
       <Tabs defaultValue="input" className="space-y-4">
         <TabsList>
           <TabsTrigger value="input">Patient Input</TabsTrigger>
@@ -199,8 +209,9 @@ export default function RiskPredictorPage() {
           </TabsTrigger>
         </TabsList>
 
+        {/* Patient Information Form */}
         <TabsContent value="input">
-          <Card>
+         <Card>
             <CardHeader>
               <CardTitle>Patient Information</CardTitle>
               <CardDescription>Enter the patient's details to calculate their risk level.</CardDescription>
