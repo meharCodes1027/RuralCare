@@ -1,533 +1,337 @@
-"use client" // Tells Next.js this is a client-side component
+// Indicates this code is intended to run in the client-side environment (React Server Components)
+"use client"
 
-// Import necessary libraries and UI components
-import { useState } from "react"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+// Import necessary components and hooks
+import { useState, useEffect } from "react"
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { ArrowRight, CheckCircle, HelpCircle } from "lucide-react"
-import { Separator } from "@/components/ui/separator"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useTranslation } from "@/components/i18n/language-provider"
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table"
+import { Search, RefreshCw } from "lucide-react"
+import { 
+  MotionDiv, 
+  MotionCard, 
+  MotionButton, 
+  MotionList, 
+  MotionListItem,
+  MotionText
+} from "@/components/ui/motion"
+import { motion } from "framer-motion"
 
-// Define form schema and validation using Zod
-const formSchema = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  age: z.string().refine((val) => !isNaN(Number.parseInt(val)) && Number.parseInt(val) > 0 && Number.parseInt(val) < 120, {
-    message: "Age must be a valid number between 1 and 120.",
-  }),
-  gender: z.string().min(1, { message: "Please select a gender." }),
-  bloodPressureSystolic: z.string().refine((val) => !isNaN(Number.parseInt(val)) && Number.parseInt(val) > 0, {
-    message: "Please enter a valid systolic blood pressure.",
-  }),
-  bloodPressureDiastolic: z.string().refine((val) => !isNaN(Number.parseInt(val)) && Number.parseInt(val) > 0, {
-    message: "Please enter a valid diastolic blood pressure.",
-  }),
-  heartRate: z.string().refine((val) => !isNaN(Number.parseInt(val)) && Number.parseInt(val) > 0, {
-    message: "Please enter a valid heart rate.",
-  }),
-  temperature: z.string().refine((val) => !isNaN(Number.parseFloat(val)) && Number.parseFloat(val) > 30 && Number.parseFloat(val) < 45, {
-    message: "Please enter a valid temperature between 30°C and 45°C.",
-  }),
-  symptoms: z.array(z.string()).optional(),
-  comorbidities: z.array(z.string()).optional(),
-})
-
-// List of symptom options
-const symptoms = [
-  { id: "fever", label: "Fever" },
-  { id: "cough", label: "Cough" },
-  { id: "shortness-of-breath", label: "Shortness of Breath" },
-  { id: "fatigue", label: "Fatigue" },
-  { id: "headache", label: "Headache" },
-  { id: "chest-pain", label: "Chest Pain" },
-  { id: "dizziness", label: "Dizziness" },
-  { id: "nausea", label: "Nausea" },
+// Generate mock patient data
+const mockPatients = [
+  // Each object represents a patient with fields such as id, name, condition, etc.
+  {
+    id: "P1001",
+    name: "Aarav Patel",
+    age: 45,
+    gender: "Male",
+    village: "Rajpur",
+    condition: "Diabetes",
+    riskLevel: "Medium",
+    lastVisit: "2023-10-15",
+    profileImage: "",
+  },
+  {
+    id: "P1002",
+    name: "Meera Singh",
+    age: 32,
+    gender: "Female",
+    village: "Ganeshpur",
+    condition: "Pregnancy",
+    riskLevel: "Low",
+    lastVisit: "2023-11-02",
+    profileImage: "",
+  },
+  {
+    id: "P1003",
+    name: "Rajesh Kumar",
+    age: 61,
+    gender: "Male",
+    village: "Lakshmipur",
+    condition: "Hypertension",
+    riskLevel: "High",
+    lastVisit: "2023-10-28",
+    profileImage: "",
+  },
+  {
+    id: "P1004",
+    name: "Priya Sharma",
+    age: 27,
+    gender: "Female",
+    village: "Chandpur",
+    condition: "Anemia",
+    riskLevel: "Medium",
+    lastVisit: "2023-11-05",
+    profileImage: "",
+  },
+  {
+    id: "P1005",
+    name: "Vikram Reddy",
+    age: 51,
+    gender: "Male",
+    village: "Narmada",
+    condition: "COPD",
+    riskLevel: "High",
+    lastVisit: "2023-10-20",
+    profileImage: "",
+  },
+  {
+    id: "P1006",
+    name: "Ananya Das",
+    age: 35,
+    gender: "Female",
+    village: "Rajpur",
+    condition: "Thyroid",
+    riskLevel: "Low",
+    lastVisit: "2023-11-01",
+    profileImage: "",
+  },
+  {
+    id: "P1007",
+    name: "Mohan Verma",
+    age: 48,
+    gender: "Male",
+    village: "Ganeshpur",
+    condition: "Tuberculosis",
+    riskLevel: "High",
+    lastVisit: "2023-10-18",
+    profileImage: "",
+  },
+  {
+    id: "P1008",
+    name: "Lakshmi Iyer",
+    age: 29,
+    gender: "Female",
+    village: "Lakshmipur",
+    condition: "Malnutrition",
+    riskLevel: "Medium",
+    lastVisit: "2023-11-04",
+    profileImage: "",
+  },
 ]
 
-// List of comorbidity options
-const comorbidities = [
-  { id: "diabetes", label: "Diabetes" },
-  { id: "hypertension", label: "Hypertension" },
-  { id: "heart-disease", label: "Heart Disease" },
-  { id: "lung-disease", label: "Lung Disease" },
-  { id: "kidney-disease", label: "Kidney Disease" },
-  { id: "liver-disease", label: "Liver Disease" },
-  { id: "cancer", label: "Cancer" },
-  { id: "immunocompromised", label: "Immunocompromised" },
-]
+export default function PatientsPage() {
+  const { t } = useTranslation()
+  const [searchQuery, setSearchQuery] = useState("")
+  const [filteredPatients, setFilteredPatients] = useState(mockPatients)
+  const [mounted, setMounted] = useState(false)
+  const [isSearching, setIsSearching] = useState(false)
 
-// Main component: RiskPredictorPage
-export default function RiskPredictorPage() {
-  const { t } = useTranslation() // For internationalization (i18n) translations
-  const [result, setResult] = useState<null | {
-    riskLevel: "Low" | "Moderate" | "High"
-    score: number
-    recommendation: string
-    details: string[]
-  }>(null) // State to store risk assessment result
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
-  // Setup React Hook Form with Zod validation
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      age: "",
-      gender: "",
-      bloodPressureSystolic: "",
-      bloodPressureDiastolic: "",
-      heartRate: "",
-      temperature: "",
-      symptoms: [],
-      comorbidities: [],
-    },
-  })
-
-  // Handle form submission
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Extract numeric values from form fields
-    const age = Number.parseInt(values.age)
-    const systolic = Number.parseInt(values.bloodPressureSystolic)
-    const diastolic = Number.parseInt(values.bloodPressureDiastolic)
-    const heartRate = Number.parseInt(values.heartRate)
-    const temperature = Number.parseFloat(values.temperature)
-
-    let riskScore = 0
-
-    // Risk scoring based on different criteria
-
-    // Age-based risk
-    if (age > 65) riskScore += 2
-    else if (age > 50) riskScore += 1
-
-    // Blood pressure-based risk
-    if (systolic > 160 || diastolic > 100) riskScore += 3
-    else if (systolic > 140 || diastolic > 90) riskScore += 2
-
-    // Heart rate risk
-    if (heartRate > 100) riskScore += 1
-
-    // Temperature risk
-    if (temperature > 38.5) riskScore += 2
-    else if (temperature > 37.5) riskScore += 1
-
-    // Symptoms-based risk
-    if (values.symptoms) {
-      if (values.symptoms.includes("chest-pain")) riskScore += 3
-      if (values.symptoms.includes("shortness-of-breath")) riskScore += 2
-      riskScore += values.symptoms.length * 0.5 // Small weight for number of symptoms
-    }
-
-    // Comorbidities-based risk
-    if (values.comorbidities) {
-      if (values.comorbidities.includes("heart-disease")) riskScore += 3
-      if (values.comorbidities.includes("diabetes")) riskScore += 2
-      if (values.comorbidities.includes("hypertension")) riskScore += 2
-      riskScore += values.comorbidities.length * 0.5 // Small weight for number of comorbidities
-    }
-
-    // Determine final risk level based on riskScore
-    let riskLevel: "Low" | "Moderate" | "High" = "Low"
-    let recommendation = ""
-    let details: string[] = []
-
-    if (riskScore >= 8) {
-      riskLevel = "High"
-      recommendation = "Refer to district hospital immediately"
-      details = [
-        "Patient has multiple high-risk factors",
-        "Requires immediate medical attention",
-        "Consider emergency transport if available",
-        "Prepare patient file for transfer",
-      ]
-    } else if (riskScore >= 4) {
-      riskLevel = "Moderate"
-      recommendation = "Monitor closely and consider referral if symptoms worsen"
-      details = [
-        "Regular monitoring required",
-        "Check vitals every 4 hours",
-        "Re-evaluate in 24 hours",
-        "Prepare for possible referral",
-      ]
-    } else {
-      riskLevel = "Low"
-      recommendation = "Treat locally with standard protocols"
-      details = [
-        "Follow standard treatment guidelines",
-        "Schedule follow-up in 3-5 days",
-        "Educate patient on warning signs",
-        "Document in local health records",
-      ]
-    }
-
-    // Update the result state with risk information
-    setResult({
-      riskLevel,
-      score: Math.min(Math.round(riskScore * 10) / 10, 10), // Cap the score at 10
-      recommendation,
-      details,
-    })
+  // Filter patients based on search query
+  const handleSearch = () => {
+    setIsSearching(true)
+    setTimeout(() => {
+      const filtered = mockPatients.filter((patient) =>
+        patient.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        patient.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        patient.village.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        patient.condition.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      setFilteredPatients(filtered)
+      setIsSearching(false)
+    }, 400) // Slight delay for search animation
   }
 
-  // Helper function to determine badge color based on risk level
+  // Reset search
+  const handleReset = () => {
+    setIsSearching(true)
+    setSearchQuery("")
+    setTimeout(() => {
+      setFilteredPatients(mockPatients)
+      setIsSearching(false)
+    }, 300)
+  }
+
+  // Handle input change with debounce
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value)
+    if (e.target.value === "") {
+      setFilteredPatients(mockPatients)
+    }
+  }
+
+  // Get badge color based on risk level
   const getRiskBadgeVariant = (risk: string) => {
     switch (risk.toLowerCase()) {
       case "high":
-        return "destructive"
-      case "moderate":
-        return "warning"
+        return "destructive" as const
+      case "medium":
+        return "secondary" as const
       case "low":
-        return "success"
+        return "outline" as const
       default:
-        return "secondary"
+        return "secondary" as const
     }
   }
 
-  // Render the page
+  if (!mounted) return null
+
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col gap-2">
-        <h2 className="text-2xl font-bold tracking-tight">{t("risk.title")}</h2>
-        <p className="text-muted-foreground">{t("risk.description")}</p>
-      </div>
-
-      {/* Tabs for switching between input form and results */}
-      <Tabs defaultValue="input" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="input">Patient Input</TabsTrigger>
-          <TabsTrigger value="results" disabled={!result}>
-            Results
-          </TabsTrigger>
-        </TabsList>
-
-        {/* Patient Information Form */}
-        <TabsContent value="input">
-         <Card>
-            <CardHeader>
-              <CardTitle>Patient Information</CardTitle>
-              <CardDescription>Enter the patient's details to calculate their risk level.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Patient Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Enter patient name" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <div className="grid gap-4 grid-cols-2">
-                      <FormField
-                        control={form.control}
-                        name="age"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Age</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Years" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="gender"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Gender</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="male">Male</SelectItem>
-                                <SelectItem value="female">Female</SelectItem>
-                                <SelectItem value="other">Other</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  <div>
-                    <h3 className="text-lg font-medium mb-4">Vital Signs</h3>
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div className="grid gap-4 grid-cols-2">
-                        <FormField
-                          control={form.control}
-                          name="bloodPressureSystolic"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="flex items-center gap-1">
-                                Systolic BP
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <HelpCircle className="h-3 w-3 text-muted-foreground" />
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>The top number in blood pressure reading (mmHg)</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              </FormLabel>
-                              <FormControl>
-                                <Input placeholder="mmHg" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="bloodPressureDiastolic"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="flex items-center gap-1">
-                                Diastolic BP
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <HelpCircle className="h-3 w-3 text-muted-foreground" />
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>The bottom number in blood pressure reading (mmHg)</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              </FormLabel>
-                              <FormControl>
-                                <Input placeholder="mmHg" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      <div className="grid gap-4 grid-cols-2">
-                        <FormField
-                          control={form.control}
-                          name="heartRate"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Heart Rate</FormLabel>
-                              <FormControl>
-                                <Input placeholder="BPM" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="temperature"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Temperature</FormLabel>
-                              <FormControl>
-                                <Input placeholder="°C" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  <div className="grid gap-6 md:grid-cols-2">
-                    <FormField
-                      control={form.control}
-                      name="symptoms"
-                      render={() => (
-                        <FormItem>
-                          <div className="mb-4">
-                            <FormLabel className="text-base">Symptoms</FormLabel>
-                            <FormDescription>Select all symptoms that apply.</FormDescription>
-                          </div>
-                          <div className="grid grid-cols-2 gap-2">
-                            {symptoms.map((symptom) => (
-                              <FormField
-                                key={symptom.id}
-                                control={form.control}
-                                name="symptoms"
-                                render={({ field }) => {
-                                  return (
-                                    <FormItem
-                                      key={symptom.id}
-                                      className="flex flex-row items-start space-x-2 space-y-0"
-                                    >
-                                      <FormControl>
-                                        <Checkbox
-                                          checked={field.value?.includes(symptom.id)}
-                                          onCheckedChange={(checked) => {
-                                            return checked
-                                              ? field.onChange([...(field.value || []), symptom.id])
-                                              : field.onChange(field.value?.filter((value) => value !== symptom.id))
-                                          }}
-                                        />
-                                      </FormControl>
-                                      <FormLabel className="font-normal">{symptom.label}</FormLabel>
-                                    </FormItem>
-                                  )
-                                }}
-                              />
-                            ))}
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="comorbidities"
-                      render={() => (
-                        <FormItem>
-                          <div className="mb-4">
-                            <FormLabel className="text-base">Comorbidities</FormLabel>
-                            <FormDescription>Select all pre-existing conditions.</FormDescription>
-                          </div>
-                          <div className="grid grid-cols-2 gap-2">
-                            {comorbidities.map((condition) => (
-                              <FormField
-                                key={condition.id}
-                                control={form.control}
-                                name="comorbidities"
-                                render={({ field }) => {
-                                  return (
-                                    <FormItem
-                                      key={condition.id}
-                                      className="flex flex-row items-start space-x-2 space-y-0"
-                                    >
-                                      <FormControl>
-                                        <Checkbox
-                                          checked={field.value?.includes(condition.id)}
-                                          onCheckedChange={(checked) => {
-                                            return checked
-                                              ? field.onChange([...(field.value || []), condition.id])
-                                              : field.onChange(field.value?.filter((value) => value !== condition.id))
-                                          }}
-                                        />
-                                      </FormControl>
-                                      <FormLabel className="font-normal">{condition.label}</FormLabel>
-                                    </FormItem>
-                                  )
-                                }}
-                              />
-                            ))}
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <Button type="submit" className="w-full">
-                    Calculate Risk
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="results">
-          {result && (
-            <div className="grid gap-4 md:grid-cols-2">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex justify-between items-center">
-                    <span>Risk Assessment</span>
-                    <Badge variant={getRiskBadgeVariant(result.riskLevel)} className="ml-2">
-                      {result.riskLevel} Risk
-                    </Badge>
-                  </CardTitle>
-                  <CardDescription>Based on the provided patient information</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Risk Score:</span>
-                    <span className="text-sm">{result.score}/10</span>
-                  </div>
-
-                  <div className="w-full bg-secondary rounded-full h-2.5">
-                    <div
-                      className={`h-2.5 rounded-full ${
-                        result.riskLevel === "High"
-                          ? "bg-destructive"
-                          : result.riskLevel === "Moderate"
-                            ? "bg-yellow-500"
-                            : "bg-green-500"
-                      }`}
-                      style={{ width: `${result.score * 10}%` }}
-                    ></div>
-                  </div>
-
-                  <div className="pt-4">
-                    <h4 className="text-sm font-medium mb-2">Recommendation:</h4>
-                    <p className="text-sm">{result.recommendation}</p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Action Plan</CardTitle>
-                  <CardDescription>Suggested next steps for this patient</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2">
-                    {result.details.map((detail, index) => (
-                      <li key={index} className="flex items-start gap-2">
-                        <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 shrink-0" />
-                        <span className="text-sm">{detail}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-                <CardFooter className="flex justify-between">
-                  <Button variant="outline">Save Assessment</Button>
-                  <Button>Print Report</Button>
-                </CardFooter>
-              </Card>
+    <MotionDiv 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="space-y-4"
+    >
+      <MotionCard 
+        whileHover={{ scale: 1.005 }}
+        transition={{ duration: 0.2 }}
+      >
+        <CardHeader>
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <CardTitle>Patient Registry</CardTitle>
+            <CardDescription>View and manage patient records from rural health centers</CardDescription>
+          </motion.div>
+        </CardHeader>
+        <CardContent>
+          <motion.div 
+            className="flex flex-wrap gap-2 mb-6"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <div className="flex-1 relative">
+              <Input
+                placeholder="Search patients by name, ID, village, or condition..."
+                value={searchQuery}
+                onChange={handleInputChange}
+                className="w-full transition-all duration-200 pl-10 focus:ring-2 focus:ring-primary/30"
+              />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             </div>
-          )}
-        </TabsContent>
-      </Tabs>
-    </div>
+            <MotionButton
+              onClick={handleSearch}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              {isSearching ? (
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Search className="h-4 w-4 mr-2" />
+              )}
+              Search
+            </MotionButton>
+            <MotionButton
+              variant="outline"
+              onClick={handleReset}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {isSearching ? (
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4 mr-2" />
+              )}
+              Reset
+            </MotionButton>
+          </motion.div>
+
+          <motion.div 
+            className="rounded-md border overflow-hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Patient</TableHead>
+                  <TableHead>Age/Gender</TableHead>
+                  <TableHead>Village</TableHead>
+                  <TableHead>Condition</TableHead>
+                  <TableHead>Risk Level</TableHead>
+                  <TableHead>Last Visit</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isSearching ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="h-24 text-center">
+                      <RefreshCw className="h-6 w-6 mx-auto animate-spin text-primary" />
+                      <p className="mt-2 text-sm text-muted-foreground animate-pulse">Searching patients...</p>
+                    </TableCell>
+                  </TableRow>
+                ) : filteredPatients.length > 0 ? (
+                  <MotionList staggerDelay={0.05}>
+                    {filteredPatients.map((patient, index) => (
+                      <MotionListItem key={patient.id}>
+                        <TableRow className="group hover:bg-muted/50 transition-colors">
+                          <TableCell className="font-medium">
+                            <div className="flex items-center gap-2">
+                              <motion.div whileHover={{ scale: 1.2 }} transition={{ type: "spring", stiffness: 500 }}>
+                                <Avatar className="h-8 w-8 border-2 border-transparent group-hover:border-primary transition-all">
+                                  <AvatarImage src={patient.profileImage} />
+                                  <AvatarFallback className="bg-primary/10 text-primary group-hover:bg-primary/20 transition-colors">
+                                    {patient.name.substring(0, 2)}
+                                  </AvatarFallback>
+                                </Avatar>
+                              </motion.div>
+                              <div>
+                                <div className="font-medium group-hover:text-primary transition-colors">
+                                  {patient.name}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  {patient.id}
+                                </div>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>{patient.age} / {patient.gender}</TableCell>
+                          <TableCell>{patient.village}</TableCell>
+                          <TableCell>{patient.condition}</TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant={getRiskBadgeVariant(patient.riskLevel)}
+                              className="transition-all duration-300 group-hover:scale-110"
+                            >
+                              {patient.riskLevel}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="group-hover:font-medium transition-all">
+                            {new Date(patient.lastVisit).toLocaleDateString()}
+                          </TableCell>
+                        </TableRow>
+                      </MotionListItem>
+                    ))}
+                  </MotionList>
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={6} className="h-24 text-center">
+                      <MotionText
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        No patients found. Try a different search.
+                      </MotionText>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </motion.div>
+        </CardContent>
+      </MotionCard>
+    </MotionDiv>
   )
-}
+} 
