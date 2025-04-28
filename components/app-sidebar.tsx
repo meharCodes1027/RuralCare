@@ -104,16 +104,14 @@ export function AppSidebar() {
             </SidebarMenuButton>
           </SidebarMenuItem>
 
-          {userData.role === "doctor" && (
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/dashboard/settings")}>
-                <Link href="/dashboard/settings">
-                  <Settings />
-                  <span>{t("dashboard.settings")}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          )}
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive("/dashboard/settings")}>
+              <Link href="/dashboard/settings">
+                <Settings />
+                <span>{t("dashboard.settings")}</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
         </SidebarMenu>
       </SidebarContent>
       <SidebarSeparator />
