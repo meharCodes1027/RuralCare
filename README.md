@@ -62,4 +62,4 @@ Let’s turn data into decisions, and decisions into outcomes — for the 65% of
 - Mapbox / Leaflet (Planned) – For geographical visualization
 
 
-Deployed link of the website : https://github-olive-two.vercel.app/dashboard
+deployed link of the website : https://github-olive-two.vercel.app/dashboard
