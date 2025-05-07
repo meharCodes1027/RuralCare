@@ -125,7 +125,7 @@ export default function DashboardPage() {
       
       requestId = requestAnimationFrame(step)
       return () => cancelAnimationFrame(requestId)
-    }, [end, duration, mounted])
+    }, [end, duration])
     
     return count
   }
